@@ -1,19 +1,26 @@
 # V0 Architecture and Stack Design
 
 Date: 2026-04-03
-Status: Drafted from brainstorming session; awaiting user review
+Updated: 2026-04-05
+Status: Accepted current design
 
 ## Goal
 
 Define the overall shape of the project before subsystem design. The intent is to optimize for fast iteration, outside-in development, and maintainability without overengineering v0.
 
+## Current Project State
+
+The repository is currently a freshly generated Phoenix application with LiveView auth scaffolding and SQLite/Ecto wiring. There is no assistant-specific product functionality implemented yet.
+
+This document describes the chosen architecture for building on top of that scaffold.
+
 ## Design Summary
 
-The project should start as a single Phoenix application using LiveView as the primary user interface. The architecture should be an API-conscious layered monolith: the LiveView UI can call application logic directly, and a future HTTP API should call the same lower-level modules rather than duplicating behavior.
+The project should proceed as a single Phoenix application using LiveView as the primary v0 user interface. The architecture should be an API-conscious layered monolith: the LiveView UI can call application logic directly, and the planned HTTP API should call the same lower-level modules rather than duplicating behavior.
 
 Persistence should exist from the start, but should remain lightweight. For v0, that means Ecto with SQLite rather than a mandatory external Postgres dependency.
 
-The initial execution model should be mostly synchronous and reactive. Normal chat interactions should happen inline within the current user flow. The architecture should preserve a clear seam for later promotion of selected actions into persisted background tasks.
+The initial execution model should be mostly synchronous and reactive. Normal assistant interactions should happen inline within the current user flow, meaning they are handled as part of the current user interaction rather than delegated to an independent persisted background task. The architecture should preserve a clear seam for later promotion of selected actions into persisted background tasks.
 
 ## Key Product Assumptions
 
@@ -52,10 +59,19 @@ That means:
 - one deployable Phoenix app
 - LiveView is the first real interface
 - core application logic does not depend on LiveView or JSON controllers
-- future API endpoints should call the same application layer as the UI
+- planned API endpoints should call the same application layer as the UI
 - persistence and backend orchestration live below the delivery layer
 
 This preserves the development feel of a LiveView-first product while keeping the codebase ready for a later HTTP API and additional interaction surfaces.
+
+## Delivery Clarification
+
+The project is not API-first.
+
+- the primary v0 entry point is the LiveView web UI
+- the HTTP API is planned from the beginning
+- the UI should not be forced to go through the API internally
+- both the LiveView UI and the planned HTTP API should depend on shared lower-level modules
 
 ## Runtime Entry Points
 
@@ -65,8 +81,6 @@ This preserves the development feel of a LiveView-first product while keeping th
 ### Planned secondary entry point
 - HTTP API built on top of the same application logic
 
-The UI should not be forced to go through the API internally. Instead, both the UI and API should depend on shared lower-level modules.
-
 ## Interaction Model
 
 The initial interaction model is hybrid in architecture but reactive in behavior.
@@ -75,7 +89,9 @@ The initial interaction model is hybrid in architecture but reactive in behavior
 - UI updates should be visible quickly and support iterative development
 - the code should keep a seam where selected actions can later become persisted background tasks
 
-This should feel like approach C in architecture, with an implementation that initially behaves much like approach A.
+This reflects the chosen architecture: the system is layered from the beginning to support both the LiveView UI and the planned HTTP API, while v0 behavior remains primarily inline and reactive.
+
+Here, inline means the user triggers an interaction and the system handles that work within the same active flow, instead of turning it into a separate background task that continues independently.
 
 ## Persistence Direction
 
@@ -99,6 +115,7 @@ The project should roughly follow this dependency direction:
 2. Application layer
    - session orchestration
    - conversation handling
+   - agent loop
    - backend invocation
    - logging and persistence coordination
 3. Infrastructure layer
@@ -112,7 +129,7 @@ Lower layers should not depend on LiveView.
 
 The chosen architecture should support outside-in development:
 
-- start with a simple UI flow
+- start with a simple LiveView-driven user flow
 - connect it to application-layer actions
 - stub or simplify deeper integrations temporarily when useful
 - replace those stubs with real persistence and backend behavior incrementally
@@ -130,9 +147,21 @@ The following should be deliberately deferred until the product proves it needs 
 - generalized multi-user architecture
 - overly generic backend abstraction layers
 
-## Immediate Follow-On Design Topics
+## Immediate Next Design Discussion
 
-Once this document is accepted, the next high-value design topics are:
+The next design step should be to define the first vertical slice from the current scaffold.
+
+That discussion should determine:
+
+1. the first real page or LiveView
+2. the first assistant interaction flow
+3. the initial persistence needed for that flow
+4. the first backend adapter stub or integration point
+5. the definition of done for the first usable slice
+
+## Follow-On Design Topics
+
+After the first vertical slice is defined, the next high-value design topics are:
 
 1. define the internal application-layer boundaries and responsibilities
 2. define the backend adapter interface

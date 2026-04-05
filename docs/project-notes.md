@@ -1,19 +1,29 @@
 # AI Assistant Project Notes
 
 Date: 2026-04-03
+Updated: 2026-04-05
 
 ## Context
 
-These notes capture the discussion about building a minimal but usable personal AI assistant inspired by the personal-assistant side of OpenClaw, explicitly excluding anything related to the retro game project with the same name.
+These notes capture the current direction for building a minimal but usable personal AI assistant inspired by the personal-assistant side of OpenClaw, explicitly excluding anything related to the retro game project with the same name.
+
+## Current Project State
+
+The repository is currently a freshly generated Phoenix application with LiveView auth scaffolding.
+
+Current implementation state:
+- Phoenix app scaffolded
+- LiveView auth scaffolded
+- SQLite/Ecto setup present
+- no assistant-specific product functionality implemented yet
 
 ## What OpenClaw Means Here
 
-OpenClaw, in the relevant sense, is a self-hosted personal AI assistant platform. Its notable ideas include:
+OpenClaw, in the relevant sense, is a self-hosted personal AI assistant platform. The relevant inspiration is:
 - personal-assistant framing rather than just a chat UI
-- local/self-hosted control plane
-- multiple messaging/device channels
+- persistent assistant behavior
 - tool use and automation
-- persistent, always-available assistant behavior
+- multiple possible interaction surfaces over time
 
 The goal here is not to reproduce its breadth, but to build a much smaller, usable version.
 
@@ -25,13 +35,14 @@ For an experienced software developer who is new to modern LLM tooling:
 - something trustworthy as a daily personal assistant: roughly 6-12 weeks
 - OpenClaw-like breadth/polish: many months of ongoing work
 
-Key point: model/API integration is likely the easy part. The harder parts are state, memory, autonomy, tools, safety, reliability, and long-running behavior.
+Key point: model integration is likely the easy part. The harder parts are state, memory, autonomy, tools, safety, reliability, and long-running behavior.
 
-## Recommended Initial Scope
+## Current v0 Scope
 
 Keep v0 narrow and intentionally boring:
-- one primary surface first: HTTP API + simple web UI
-- add Telegram later as the second surface
+- one primary surface first: LiveView web UI
+- keep the architecture API-conscious so a future HTTP API can reuse the same lower-level modules
+- add Telegram later as a second surface
 - hosted models only
 - one assistant persona
 - persistent sessions
@@ -43,13 +54,14 @@ Keep v0 narrow and intentionally boring:
 - no local model hosting
 - no broad multi-channel support
 
-This scope was explicitly agreed as the right direction: start small and only add breadth where needed.
+This scope is the current chosen direction. Earlier API-first framing is superseded.
 
-## Your Stated Preferences
+## Current Design Preferences
 
 - breadth should stay minimal initially
-- web + Telegram is enough
-- start with an HTTP API and simple web UI
+- LiveView is the primary v0 entry point
+- the app should be a layered monolith, not split into separate frontend/backend apps
+- the HTTP API is planned from the beginning, but is not the initial primary delivery surface
 - Telegram can come later
 - use hosted models, not local ones
 - do not necessarily integrate directly with model providers at first
@@ -64,20 +76,26 @@ This scope was explicitly agreed as the right direction: start small and only ad
 
 ## Suggested Architecture for v0
 
-A reasonable first architecture would have these pieces:
-- channel layer
-  - HTTP API first
-  - web UI on top of the API
+A reasonable first architecture has these pieces:
+- delivery layer
+  - LiveView UI first
+  - planned HTTP API built on the same application logic
   - Telegram adapter later
+- application layer
+  - session orchestration
+  - conversation handling
+  - agent loop
+  - backend invocation
+  - persistence/logging coordination
+- infrastructure layer
+  - repo and schemas
+  - backend adapters
+  - external integrations
 - session store
   - conversation history
   - metadata
   - summaries
   - preferences
-- agent loop
-  - takes user input + relevant context
-  - calls selected backend
-  - handles backend responses and tool results
 - tool runtime
   - only a few explicit tools at first
 - persistence and observability
@@ -119,9 +137,9 @@ This should likely be modeled as a normal application subsystem, with the LLM he
 
 ## Recommended Development Order
 
-1. Create the project skeleton.
-2. Build the HTTP API.
-3. Build a minimal web UI.
+1. Keep the Phoenix scaffold as the base.
+2. Define the first vertical slice.
+3. Build the first LiveView assistant interaction.
 4. Integrate one backend first (probably whichever is easiest to drive reliably).
 5. Add persistent sessions and logs.
 6. Add a tiny tool surface.
@@ -145,9 +163,20 @@ Do not start with full autonomy. Start with a useful reactive assistant that:
 
 Then add memory depth, task tracking, and autonomy incrementally.
 
-## Next Topics to Analyze
+## Next Discussion: The First Vertical Slice
 
-Before implementation, the most valuable design work is likely:
+The next design discussion should define the first vertical slice from the current scaffold.
+
+That discussion should answer:
+- what is the first real page or LiveView?
+- what is the first assistant interaction flow?
+- what should be persisted immediately?
+- what backend adapter stub or first integration is needed?
+- what counts as done for the first usable slice?
+
+## Follow-On Topics After That
+
+After the first vertical slice is defined, the next high-value design work is likely:
 - choosing the internal backend interface for opencode and Augment
 - designing session/memory boundaries
 - deciding what “task” means in the system
