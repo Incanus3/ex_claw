@@ -52,48 +52,80 @@ Prefer warning at a clean checkpoint rather than in the middle of a small edit/v
 - suggest a good handoff point or fresh-session boundary,
 - and offer a compact resume prompt or summary if helpful.
 
-If there are important learnings, decisions, caveats, or next-step recommendations that are not yet persisted in code,
-docs, or beads, suggest creating a short handoff document under `docs/handoffs/` when that would make the next
-session safer or more efficient.
+If there are important learnings, decisions, caveats, or next-step recommendations that are not yet
+persisted in code, docs, or beads, suggest creating a short handoff document under `docs/handoffs/`
+when that would make the next session safer or more efficient.
 
 # Task tracking
 
 ## Beads are the default task source
 
-This project uses **beads** as the persistent issue tracker. Always use `bd` commands to interact with issues —
-never edit tasks manually.
-At the start of a conversation, run `bd ready` to see what work is available and ask the user what to focus on.
-Beads should be the **first place you look** when the user asks what to work on, asks for a status check, or uses similar casual phrasing.
-Interpret casual status-check questions such as "what's up?", "anything ready?", or similar variations as a request to check `bd ready` and summarize the ready beads.
+This project uses **beads** as the persistent issue tracker. Always use `bd` commands to interact
+with issues — never edit tasks manually. At the start of a conversation, run `bd ready` to see what
+work is available and ask the user what to focus on. Beads should be the **first place you look**
+when the user asks what to work on, asks for a status check, or uses similar casual phrasing.
+Interpret casual status-check questions such as "what's up?", "anything ready?", or similar
+variations as a request to check `bd ready` and summarize the ready beads.
+
+### Repo-specific beads viewer/export guidance
+
+- In this repo, use **`bd` only** for issue tracking workflows. Do **not** use `br`; it is an
+  alternative toolchain and is not fully compatible with this repository's current beads setup.
+- If the `bv` viewer needs refreshed issue data, export the current `bd` issues to the JSONL file it
+  expects with:
+  - `bd export -o .beads/issues.jsonl`
+- Treat `.beads/issues.jsonl` as the VCS-committable export that keeps `bv` working with the
+  current `bd` issue database.
 
 # Version Control
 
-Prefer **Jujutsu** (`jj`) over `git` when the `jj` CLI is available. Check with `command -v jj` if unsure. Use the
-jujutsu skill for command reference.
+Prefer **Jujutsu** (`jj`) over `git` when the `jj` CLI is available. Check with `command -v jj` if
+unsure. Use the jujutsu skill for command reference.
+
+Comitting and similar invasive VCS work is handled by the user. Do not commit, push, rebase, or
+otherwise modify VCS state unless the user explicitly asks.
 
 # Documentation Organization
 
-1. **General reference documentation** — Long-lived documents containing general information unrelated to specific tasks
-   or features (for example architecture overviews, API references, or coding standards) should be placed directly under
-   `docs/`.
+1. **General reference documentation** — Long-lived documents containing general information
+   unrelated to specific tasks or features (for example architecture overviews, API references, or
+   coding standards) should be placed directly under `docs/`.
    - Example: `docs/architecture-overview.md`
    - Example: `docs/api-reference.md`
 
-2. **Task-specific planning documents** — Non-PRD planning documents related to specific tasks, such as design
-   documents, technical analysis, implementation plans, or viability studies, should be placed under `docs/plans/`. Do
-   **not** prefix non-PRD plan filenames with dates. Use descriptive subdirectories when grouping related planning
-   documents if there is more than one.
+2. **Task-specific planning documents** — Non-PRD planning documents related to specific tasks, such
+   as design documents, technical analysis, implementation plans, or viability studies, should be
+   placed under `docs/plans/`. Do **not** prefix non-PRD plan filenames with dates. Use descriptive
+   subdirectories when grouping related planning documents if there is more than one.
    - Example: `docs/plans/architecture-and-stack-design.md`
    - Example: `docs/plans/entity-pagination/design.md`
    - Example: `docs/plans/entity-pagination/implementation.md`
 
-3. **Product Requirements Documents (PRDs)** — PRDs should be placed under `docs/prd/` and should be prefixed with the
-   date of their creation in the `YYYY-MM-DD-` format.
+3. **Product Requirements Documents (PRDs)** — PRDs should be placed under `docs/prd/` and should be
+   prefixed with the date of their creation in the `YYYY-MM-DD-` format.
    - Example: `docs/prd/2026-03-11-entity-pagination.md`
    - Example: `docs/prd/2026-03-11-admin-search-improvements.md`
 
-4. **Handoff documents** — Session handoffs, resumable context summaries, and next-step notes should be placed under
-   `docs/handoffs/` and should be prefixed with the date of their creation in the `YYYY-MM-DD-` format.
+## Outside-in PRDs and execution planning
+
+When a PRD is written in outside-in or product-first order rather than strict technical dependency order:
+
+- Read the full PRD and any linked design docs before starting implementation of an individual story.
+- Expect earlier stories to sometimes depend on interfaces, schemas, or behaviors that are specified
+  more fully in later stories.
+- If early implementation requires scaffolding or temporary stubs, shape that work to match the
+  later documented contracts and invariants instead of inventing temporary structures that will need
+  reshaping.
+- When converting such a PRD into an implementation plan or beads, do **not** assume a 1:1
+  user-story-to-bead mapping.
+- Instead, create execution units based on dependency order, safe implementation sequence, and
+  useful checkpoints while preserving traceability back to the PRD stories.
+- Add stronger operational guidance in the implementation plan and beads, including required
+  reading, forward references, and explicit stub/defer instructions where useful.
+
+4. **Handoff documents** — Session handoffs, resumable context summaries, and next-step notes should
+   be placed under `docs/handoffs/` and should be prefixed with the date of their creation in the
+   `YYYY-MM-DD-` format.
    - Example: `docs/handoffs/2026-04-03-architecture-and-stack-handoff.md`
 
 ## Project guidelines
@@ -101,24 +133,36 @@ jujutsu skill for command reference.
 This is a web application written using the Phoenix web framework.
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
-- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
+- Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid**
+  `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client
+  for Phoenix apps
 
 ### Phoenix v1.8 guidelines
 
-- **Always** begin your LiveView templates with `<Layouts.app flash={@flash} ...>` which wraps all inner content
-- The `MyAppWeb.Layouts` module is aliased in the `my_app_web.ex` file, so you can use it without needing to alias it again
+- **Always** begin your LiveView templates with `<Layouts.app flash={@flash} ...>` which wraps all
+  inner content
+- The `MyAppWeb.Layouts` module is aliased in the `my_app_web.ex` file, so you can use it without
+  needing to alias it again
 - Anytime you run into errors with no `current_scope` assign:
-  - You failed to follow the Authenticated Routes guidelines, or you failed to pass `current_scope` to `<Layouts.app>`
-  - **Always** fix the `current_scope` error by moving your routes to the proper `live_session` and ensure you pass `current_scope` as needed
-- Phoenix v1.8 moved the `<.flash_group>` component to the `Layouts` module. You are **forbidden** from calling `<.flash_group>` outside of the `layouts.ex` module
-- Out of the box, `core_components.ex` imports an `<.icon name="hero-x-mark" class="w-5 h-5"/>` component for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar
-- **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will save steps and prevent errors
-- If you override the default input classes (`<.input class="myclass px-2 py-1 rounded-lg">)`) class with your own values, no default classes are inherited, so your
+  - You failed to follow the Authenticated Routes guidelines, or you failed to pass `current_scope`
+    to `<Layouts.app>`
+  - **Always** fix the `current_scope` error by moving your routes to the proper `live_session` and
+    ensure you pass `current_scope` as needed
+- Phoenix v1.8 moved the `<.flash_group>` component to the `Layouts` module. You are **forbidden**
+  from calling `<.flash_group>` outside of the `layouts.ex` module
+- Out of the box, `core_components.ex` imports an `<.icon name="hero-x-mark" class="w-5 h-5"/>`
+  component for hero icons. **Always** use the `<.icon>` component for icons, **never** use
+  `Heroicons` modules or similar
+- **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when
+  available. `<.input>` is imported and using it will save steps and prevent errors
+- If you override the default input classes (`<.input class="myclass px-2 py-1 rounded-lg">)`) class
+  with your own values, no default classes are inherited, so your
 custom classes must fully style the input
 
 ### JS and CSS guidelines
 
-- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually stunning interfaces.
+- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually
+  stunning interfaces.
 - Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`:
 
       @import "tailwindcss" source(none);
@@ -126,9 +170,11 @@ custom classes must fully style the input
       @source "../js";
       @source "../../lib/my_app_web";
 
-- **Always use and maintain this import syntax** in the app.css file for projects generated with `phx.new`
+- **Always use and maintain this import syntax** in the app.css file for projects generated with
+  `phx.new`
 - **Never** use `@apply` when writing raw css
-- **Always** manually write your own tailwind-based components instead of using daisyUI for a unique, world-class design
+- **Always** manually write your own tailwind-based components instead of using daisyUI for a
+  unique, world-class design
 - Out of the box **only the app.js and app.css bundles are supported**
   - You cannot reference an external vendor'd script `src` or link `href` in the layouts
   - You must import the vendor deps into app.js and app.css to use them
@@ -145,23 +191,37 @@ custom classes must fully style the input
 ## Authentication
 
 - **Always** handle authentication flow at the router level with proper redirects
-- **Always** be mindful of where to place routes. `phx.gen.auth` creates multiple router plugs and `live_session` scopes:
+- **Always** be mindful of where to place routes. `phx.gen.auth` creates multiple router plugs and
+  `live_session` scopes:
   - A plug `:fetch_current_scope_for_user` that is included in the default browser pipeline
-  - A plug `:require_authenticated_user` that redirects to the log in page when the user is not authenticated
-  - A `live_session :current_user` scope - for routes that need the current user but don't require authentication, similar to `:fetch_current_scope_for_user`
-  - A `live_session :require_authenticated_user` scope - for routes that require authentication, similar to the plug with the same name
+  - A plug `:require_authenticated_user` that redirects to the log in page when the user is not
+    authenticated
+  - A `live_session :current_user` scope - for routes that need the current user but don't require
+    authentication, similar to `:fetch_current_scope_for_user`
+  - A `live_session :require_authenticated_user` scope - for routes that require authentication,
+    similar to the plug with the same name
   - In both cases, a `@current_scope` is assigned to the Plug connection and LiveView socket
-  - A plug `redirect_if_user_is_authenticated` that redirects to a default path in case the user is authenticated - useful for a registration page that should only be shown to unauthenticated users
-- **Always let the user know in which router scopes, `live_session`, and pipeline you are placing the route, AND SAY WHY**
+  - A plug `redirect_if_user_is_authenticated` that redirects to a default path in case the user is
+    authenticated - useful for a registration page that should only be shown to unauthenticated
+    users
+- **Always let the user know in which router scopes, `live_session`, and pipeline you are placing
+  the route, AND SAY WHY**
 - `phx.gen.auth` assigns the `current_scope` assign - it **does not assign a `current_user` assign**
-- Always pass the assign `current_scope` to context modules as first argument. When performing queries, use `current_scope.user` to filter the query results
-- To derive/access `current_user` in templates, **always use the `@current_scope.user`**, never use **`@current_user`** in templates or LiveViews
-- **Never** duplicate `live_session` names. A `live_session :current_user` can only be defined __once__ in the router, so all routes for the `live_session :current_user`  must be grouped in a single block
-- Anytime you hit `current_scope` errors or the logged in session isn't displaying the right content, **always double check the router and ensure you are using the correct plug and `live_session` as described below**
+- Always pass the assign `current_scope` to context modules as first argument. When performing
+  queries, use `current_scope.user` to filter the query results
+- To derive/access `current_user` in templates, **always use the `@current_scope.user`**, never use
+  **`@current_user`** in templates or LiveViews
+- **Never** duplicate `live_session` names. A `live_session :current_user` can only be defined
+  __once__ in the router, so all routes for the `live_session :current_user`  must be grouped in a
+  single block
+- Anytime you hit `current_scope` errors or the logged in session isn't displaying the right
+  content, **always double check the router and ensure you are using the correct plug and
+  `live_session` as described below**
 
 ### Routes that require authentication
 
-LiveViews that require login should **always be placed inside the __existing__ `live_session :require_authenticated_user` block**:
+LiveViews that require login should **always be placed inside the __existing__ `live_session
+:require_authenticated_user` block**:
 
     scope "/", AppWeb do
       pipe_through [:browser, :require_authenticated_user]
@@ -186,7 +246,8 @@ Controller routes must be placed in a scope that sets the `:require_authenticate
 
 ### Routes that work with or without authentication
 
-LiveViews that can work with or without authentication, **always use the __existing__ `:current_user` scope**, ie:
+LiveViews that can work with or without authentication, **always use the __existing__
+`:current_user` scope**, ie:
 
     scope "/", MyAppWeb do
       pipe_through [:browser]
@@ -218,8 +279,9 @@ Controllers automatically have the `current_scope` available if they use the `:b
       mylist = ["blue", "green"]
       Enum.at(mylist, i)
 
-- Elixir variables are immutable, but can be rebound, so for block expressions like `if`, `case`, `cond`, etc
-  you *must* bind the result of the expression to a variable if you want to use it and you CANNOT rebind the result inside the expression, ie:
+- Elixir variables are immutable, but can be rebound, so for block expressions like `if`, `case`,
+  `cond`, etc you *must* bind the result of the expression to a variable if you want to use it and
+  you CANNOT rebind the result inside the expression, ie:
 
       # INVALID: we are rebinding inside the `if` and the result never gets assigned
       if connected?(socket) do
@@ -232,36 +294,52 @@ Controllers automatically have the `current_scope` available if they use the `:b
           assign(socket, :val, val)
         end
 
-- **Never** nest multiple modules in the same file as it can cause cyclic dependencies and compilation errors
-- **Never** use map access syntax (`changeset[:field]`) on structs as they do not implement the Access behaviour by default. For regular structs, you **must** access the fields directly, such as `my_struct.field` or use higher level APIs that are available on the struct if they exist, `Ecto.Changeset.get_field/2` for changesets
-- Elixir's standard library has everything necessary for date and time manipulation. Familiarize yourself with the common `Time`, `Date`, `DateTime`, and `Calendar` interfaces by accessing their documentation as necessary. **Never** install additional dependencies unless asked or for date/time parsing (which you can use the `date_time_parser` package)
+- **Never** nest multiple modules in the same file as it can cause cyclic dependencies and
+  compilation errors
+- **Never** use map access syntax (`changeset[:field]`) on structs as they do not implement the
+  Access behaviour by default. For regular structs, you **must** access the fields directly, such as
+  `my_struct.field` or use higher level APIs that are available on the struct if they exist,
+  `Ecto.Changeset.get_field/2` for changesets
+- Elixir's standard library has everything necessary for date and time manipulation. Familiarize
+  yourself with the common `Time`, `Date`, `DateTime`, and `Calendar` interfaces by accessing their
+  documentation as necessary. **Never** install additional dependencies unless asked or for
+  date/time parsing (which you can use the `date_time_parser` package)
 - Don't use `String.to_atom/1` on user input (memory leak risk)
-- Predicate function names should not start with `is_` and should end in a question mark. Names like `is_thing` should be reserved for guards
-- Elixir's builtin OTP primitives like `DynamicSupervisor` and `Registry`, require names in the child spec, such as `{DynamicSupervisor, name: MyApp.MyDynamicSup}`, then you can use `DynamicSupervisor.start_child(MyApp.MyDynamicSup, child_spec)`
-- Use `Task.async_stream(collection, callback, options)` for concurrent enumeration with back-pressure. The majority of times you will want to pass `timeout: :infinity` as option
+- Predicate function names should not start with `is_` and should end in a question mark. Names like
+  `is_thing` should be reserved for guards
+- Elixir's builtin OTP primitives like `DynamicSupervisor` and `Registry`, require names in the
+  child spec, such as `{DynamicSupervisor, name: MyApp.MyDynamicSup}`, then you can use
+  `DynamicSupervisor.start_child(MyApp.MyDynamicSup, child_spec)`
+- Use `Task.async_stream(collection, callback, options)` for concurrent enumeration with
+  back-pressure. The majority of times you will want to pass `timeout: :infinity` as option
 
 ## Mix guidelines
 
 - Read the docs and options before using tasks (by using `mix help task_name`)
-- To debug test failures, run tests in a specific file with `mix test test/my_test.exs` or run all previously failed tests with `mix test --failed`
+- To debug test failures, run tests in a specific file with `mix test test/my_test.exs` or run all
+  previously failed tests with `mix test --failed`
 - `mix deps.clean --all` is **almost never needed**. **Avoid** using it unless you have good reason
 
 ## Test guidelines
 
 - **Always use `start_supervised!/1`** to start processes in tests as it guarantees cleanup between tests
 - **Avoid** `Process.sleep/1` and `Process.alive?/1` in tests
-  - Instead of sleeping to wait for a process to finish, **always** use `Process.monitor/1` and assert on the DOWN message:
+  - Instead of sleeping to wait for a process to finish, **always** use `Process.monitor/1` and
+    assert on the DOWN message:
 
       ref = Process.monitor(pid)
       assert_receive {:DOWN, ^ref, :process, ^pid, :normal}
 
-   - Instead of sleeping to synchronize before the next call, **always** use `_ = :sys.get_state/1` to ensure the process has handled prior messages
+   - Instead of sleeping to synchronize before the next call, **always** use `_ = :sys.get_state/1`
+     to ensure the process has handled prior messages
 <!-- phoenix:elixir-end -->
 
 <!-- phoenix:phoenix-start -->
 ## Phoenix guidelines
 
-- Remember Phoenix router `scope` blocks include an optional alias which is prefixed for all routes within the scope. **Always** be mindful of this when creating routes within a scope to avoid duplicate module prefixes.
+- Remember Phoenix router `scope` blocks include an optional alias which is prefixed for all routes
+  within the scope. **Always** be mindful of this when creating routes within a scope to avoid
+  duplicate module prefixes.
 
 - You **never** need to create your own `alias` for route definitions! The `scope` provides the alias, ie:
 
@@ -279,25 +357,39 @@ Controllers automatically have the `current_scope` available if they use the `:b
 <!-- phoenix:ecto-start -->
 ## Ecto Guidelines
 
-- **Always** preload Ecto associations in queries when they'll be accessed in templates, ie a message that needs to reference the `message.user.email`
+- **Always** preload Ecto associations in queries when they'll be accessed in templates, ie a
+  message that needs to reference the `message.user.email`
 - Remember `import Ecto.Query` and other supporting modules when you write `seeds.exs`
-- `Ecto.Schema` fields always use the `:string` type, even for `:text`, columns, ie: `field :name, :string`
-- `Ecto.Changeset.validate_number/2` **DOES NOT SUPPORT the `:allow_nil` option**. By default, Ecto validations only run if a change for the given field exists and the change value is not nil, so such as option is never needed
+- `Ecto.Schema` fields always use the `:string` type, even for `:text`, columns, ie: `field :name,
+  :string`
+- `Ecto.Changeset.validate_number/2` **DOES NOT SUPPORT the `:allow_nil` option**. By default, Ecto
+  validations only run if a change for the given field exists and the change value is not nil, so
+  such as option is never needed
 - You **must** use `Ecto.Changeset.get_field(changeset, :field)` to access changeset fields
-- Fields which are set programmatically, such as `user_id`, must not be listed in `cast` calls or similar for security purposes. Instead they must be explicitly set when creating the struct
-- **Always** invoke `mix ecto.gen.migration migration_name_using_underscores` when generating migration files, so the correct timestamp and conventions are applied
+- Fields which are set programmatically, such as `user_id`, must not be listed in `cast` calls or
+  similar for security purposes. Instead they must be explicitly set when creating the struct
+- **Always** invoke `mix ecto.gen.migration migration_name_using_underscores` when generating
+  migration files, so the correct timestamp and conventions are applied
 <!-- phoenix:ecto-end -->
 
 <!-- phoenix:html-start -->
 ## Phoenix HTML guidelines
 
 - Phoenix templates **always** use `~H` or .html.heex files (known as HEEx), **never** use `~E`
-- **Always** use the imported `Phoenix.Component.form/1` and `Phoenix.Component.inputs_for/1` function to build forms. **Never** use `Phoenix.HTML.form_for` or `Phoenix.HTML.inputs_for` as they are outdated
-- When building forms **always** use the already imported `Phoenix.Component.to_form/2` (`assign(socket, form: to_form(...))` and `<.form for={@form} id="msg-form">`), then access those forms in the template via `@form[:field]`
-- **Always** add unique DOM IDs to key elements (like forms, buttons, etc) when writing templates, these IDs can later be used in tests (`<.form for={@form} id="product-form">`)
-- For "app wide" template imports, you can import/alias into the `my_app_web.ex`'s `html_helpers` block, so they will be available to all LiveViews, LiveComponent's, and all modules that do `use MyAppWeb, :html` (replace "my_app" by the actual app name)
+- **Always** use the imported `Phoenix.Component.form/1` and `Phoenix.Component.inputs_for/1`
+  function to build forms. **Never** use `Phoenix.HTML.form_for` or `Phoenix.HTML.inputs_for` as
+  they are outdated
+- When building forms **always** use the already imported `Phoenix.Component.to_form/2`
+  (`assign(socket, form: to_form(...))` and `<.form for={@form} id="msg-form">`), then access those
+  forms in the template via `@form[:field]`
+- **Always** add unique DOM IDs to key elements (like forms, buttons, etc) when writing templates,
+  these IDs can later be used in tests (`<.form for={@form} id="product-form">`)
+- For "app wide" template imports, you can import/alias into the `my_app_web.ex`'s `html_helpers`
+  block, so they will be available to all LiveViews, LiveComponent's, and all modules that do `use
+  MyAppWeb, :html` (replace "my_app" by the actual app name)
 
-- Elixir supports `if/else` but **does NOT support `if/else if` or `if/elsif`**. **Never use `else if` or `elseif` in Elixir**, **always** use `cond` or `case` for multiple conditionals.
+- Elixir supports `if/else` but **does NOT support `if/else if` or `if/elsif`**. **Never use `else
+  if` or `elseif` in Elixir**, **always** use `cond` or `case` for multiple conditionals.
 
   **Never do this (invalid)**:
 
@@ -318,15 +410,19 @@ Controllers automatically have the `current_scope` available if they use the `:b
           ...
       <% end %>
 
-- HEEx require special tag annotation if you want to insert literal curly's like `{` or `}`. If you want to show a textual code snippet on the page in a `<pre>` or `<code>` block you *must* annotate the parent tag with `phx-no-curly-interpolation`:
+- HEEx require special tag annotation if you want to insert literal curly's like `{` or `}`. If you
+  want to show a textual code snippet on the page in a `<pre>` or `<code>` block you *must* annotate
+  the parent tag with `phx-no-curly-interpolation`:
 
       <code phx-no-curly-interpolation>
         let obj = {key: "val"}
       </code>
 
-  Within `phx-no-curly-interpolation` annotated tags, you can use `{` and `}` without escaping them, and dynamic Elixir expressions can still be used with `<%= ... %>` syntax
+  Within `phx-no-curly-interpolation` annotated tags, you can use `{` and `}` without escaping them,
+  and dynamic Elixir expressions can still be used with `<%= ... %>` syntax
 
-- HEEx class attrs support lists, but you must **always** use list `[...]` syntax. You can use the class list syntax to conditionally add classes, **always do this for multiple class values**:
+- HEEx class attrs support lists, but you must **always** use list `[...]` syntax. You can use the
+  class list syntax to conditionally add classes, **always do this for multiple class values**:
 
       <a class={[
         "px-2 text-white",
@@ -335,7 +431,8 @@ Controllers automatically have the `current_scope` available if they use the `:b
         ...
       ]}>Text</a>
 
-  and **always** wrap `if`'s inside `{...}` expressions with parens, like done above (`if(@other_condition, do: "...", else: "...")`)
+  and **always** wrap `if`'s inside `{...}` expressions with parens, like done above
+  (`if(@other_condition, do: "...", else: "...")`)
 
   and **never** do this, since it's invalid (note the missing `[` and `]`):
 
@@ -345,9 +442,14 @@ Controllers automatically have the `current_scope` available if they use the `:b
       }> ...
       => Raises compile syntax error on invalid HEEx attr syntax
 
-- **Never** use `<% Enum.each %>` or non-for comprehensions for generating template content, instead **always** use `<%= for item <- @collection do %>`
-- HEEx HTML comments use `<%!-- comment --%>`. **Always** use the HEEx HTML comment syntax for template comments (`<%!-- comment --%>`)
-- HEEx allows interpolation via `{...}` and `<%= ... %>`, but the `<%= %>` **only** works within tag bodies. **Always** use the `{...}` syntax for interpolation within tag attributes, and for interpolation of values within tag bodies. **Always** interpolate block constructs (if, cond, case, for) within tag bodies using `<%= ... %>`.
+- **Never** use `<% Enum.each %>` or non-for comprehensions for generating template content, instead
+  **always** use `<%= for item <- @collection do %>`
+- HEEx HTML comments use `<%!-- comment --%>`. **Always** use the HEEx HTML comment syntax for
+  template comments (`<%!-- comment --%>`)
+- HEEx allows interpolation via `{...}` and `<%= ... %>`, but the `<%= %>` **only** works within tag
+  bodies. **Always** use the `{...}` syntax for interpolation within tag attributes, and for
+  interpolation of values within tag bodies. **Always** interpolate block constructs (if, cond,
+  case, for) within tag bodies using `<%= ... %>`.
 
   **Always** do this:
 
@@ -370,19 +472,29 @@ Controllers automatically have the `current_scope` available if they use the `:b
 <!-- phoenix:liveview-start -->
 ## Phoenix LiveView guidelines
 
-- **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use the `<.link navigate={href}>` and  `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews
+- **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use
+  the `<.link navigate={href}>` and  `<.link patch={href}>` in templates, and `push_navigate` and
+  `push_patch` functions LiveViews
 - **Avoid LiveComponent's** unless you have a strong, specific need for them
-- LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you go to add LiveView routes to the router, the default `:browser` scope is **already aliased** with the `AppWeb` module, so you can just do `live "/weather", WeatherLive`
+- LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you go to add
+  LiveView routes to the router, the default `:browser` scope is **already aliased** with the
+  `AppWeb` module, so you can just do `live "/weather", WeatherLive`
 
 ### LiveView streams
 
-- **Always** use LiveView streams for collections for assigning regular lists to avoid memory ballooning and runtime termination with the following operations:
+- **Always** use LiveView streams for collections for assigning regular lists to avoid memory
+  ballooning and runtime termination with the following operations:
   - basic append of N items - `stream(socket, :messages, [new_msg])`
-  - resetting stream with new items - `stream(socket, :messages, [new_msg], reset: true)` (e.g. for filtering items)
+  - resetting stream with new items - `stream(socket, :messages, [new_msg], reset: true)` (e.g. for
+    filtering items)
   - prepend to stream - `stream(socket, :messages, [new_msg], at: -1)`
   - deleting items - `stream_delete(socket, :messages, msg)`
 
-- When using the `stream/3` interfaces in the LiveView, the LiveView template must 1) always set `phx-update="stream"` on the parent element, with a DOM id on the parent element like `id="messages"` and 2) consume the `@streams.stream_name` collection and use the id as the DOM id for each child. For a call like `stream(socket, :messages, [new_msg])` in the LiveView, the template would be:
+- When using the `stream/3` interfaces in the LiveView, the LiveView template must 1) always set
+  `phx-update="stream"` on the parent element, with a DOM id on the parent element like
+  `id="messages"` and 2) consume the `@streams.stream_name` collection and use the id as the DOM id
+  for each child. For a call like `stream(socket, :messages, [new_msg])` in the LiveView, the
+  template would be:
 
       <div id="messages" phx-update="stream">
         <div :for={{id, msg} <- @streams.messages} id={id}>
@@ -390,7 +502,9 @@ Controllers automatically have the `current_scope` available if they use the `:b
         </div>
       </div>
 
-- LiveView streams are *not* enumerable, so you cannot use `Enum.filter/2` or `Enum.reject/2` on them. Instead, if you want to filter, prune, or refresh a list of items on the UI, you **must refetch the data and re-stream the entire stream collection, passing reset: true**:
+- LiveView streams are *not* enumerable, so you cannot use `Enum.filter/2` or `Enum.reject/2` on
+  them. Instead, if you want to filter, prune, or refresh a list of items on the UI, you **must
+  refetch the data and re-stream the entire stream collection, passing reset: true**:
 
       def handle_event("filter", %{"filter" => filter}, socket) do
         # re-fetch the messages based on the filter
@@ -403,7 +517,8 @@ Controllers automatically have the `current_scope` available if they use the `:b
          |> stream(:messages, messages, reset: true)}
       end
 
-- LiveView streams *do not support counting or empty states*. If you need to display a count, you must track it using a separate assign. For empty states, you can use Tailwind classes:
+- LiveView streams *do not support counting or empty states*. If you need to display a count, you
+  must track it using a separate assign. For empty states, you can use Tailwind classes:
 
       <div id="tasks" phx-update="stream">
         <div class="hidden only:block">No tasks yet</div>
@@ -447,11 +562,13 @@ Controllers automatically have the `current_scope` available if they use the `:b
 
 ### LiveView JavaScript interop
 
-- Remember anytime you use `phx-hook="MyHook"` and that JS hook manages its own DOM, you **must** also set the `phx-update="ignore"` attribute
+- Remember anytime you use `phx-hook="MyHook"` and that JS hook manages its own DOM, you **must**
+  also set the `phx-update="ignore"` attribute
 - **Always** provide an unique DOM id alongside `phx-hook` otherwise a compiler error will be raised
 
 LiveView hooks come in two flavors, 1) colocated js hooks for "inline" scripts defined inside HEEx,
-and 2) external `phx-hook` annotations where JavaScript object literals are defined and passed to the `LiveSocket` constructor.
+and 2) external `phx-hook` annotations where JavaScript object literals are defined and passed to
+the `LiveSocket` constructor.
 
 #### Inline colocated js hooks
 
@@ -524,14 +641,22 @@ Where the server handled it via:
 ### LiveView tests
 
 - `Phoenix.LiveViewTest` module and `LazyHTML` (included) for making your assertions
-- Form tests are driven by `Phoenix.LiveViewTest`'s `render_submit/2` and `render_change/2` functions
-- Come up with a step-by-step test plan that splits major test cases into small, isolated files. You may start with simpler tests that verify content exists, gradually add interaction tests
-- **Always reference the key element IDs you added in the LiveView templates in your tests** for `Phoenix.LiveViewTest` functions like `element/2`, `has_element/2`, selectors, etc
-- **Never** tests again raw HTML, **always** use `element/2`, `has_element/2`, and similar: `assert has_element?(view, "#my-form")`
-- Instead of relying on testing text content, which can change, favor testing for the presence of key elements
+- Form tests are driven by `Phoenix.LiveViewTest`'s `render_submit/2` and `render_change/2`
+  functions
+- Come up with a step-by-step test plan that splits major test cases into small, isolated files. You
+  may start with simpler tests that verify content exists, gradually add interaction tests
+- **Always reference the key element IDs you added in the LiveView templates in your tests** for
+  `Phoenix.LiveViewTest` functions like `element/2`, `has_element/2`, selectors, etc
+- **Never** tests again raw HTML, **always** use `element/2`, `has_element/2`, and similar: `assert
+  has_element?(view, "#my-form")`
+- Instead of relying on testing text content, which can change, favor testing for the presence of
+  key elements
 - Focus on testing outcomes rather than implementation details
-- Be aware that `Phoenix.Component` functions like `<.form>` might produce different HTML than expected. Test against the output HTML structure, not your mental model of what you expect it to be
-- When facing test failures with element selectors, add debug statements to print the actual HTML, but use `LazyHTML` selectors to limit the output, ie:
+- Be aware that `Phoenix.Component` functions like `<.form>` might produce different HTML than
+  expected. Test against the output HTML structure, not your mental model of what you expect it to
+  be
+- When facing test failures with element selectors, add debug statements to print the actual HTML,
+  but use `LazyHTML` selectors to limit the output, ie:
 
       html = render(view)
       document = LazyHTML.from_fragment(html)
@@ -548,7 +673,8 @@ If you want to create a form based on `handle_event` params:
       {:noreply, assign(socket, form: to_form(params))}
     end
 
-When you pass a map to `to_form/1`, it assumes said map contains the form params, which are expected to have string keys.
+When you pass a map to `to_form/1`, it assumes said map contains the form params, which are expected
+to have string keys.
 
 You can also specify a name to nest the params:
 
@@ -558,7 +684,8 @@ You can also specify a name to nest the params:
 
 #### Creating a form from changesets
 
-When using changesets, the underlying data, form params, and errors are retrieved from it. The `:as` option is automatically computed too. E.g. if you have a user schema:
+When using changesets, the underlying data, form params, and errors are retrieved from it. The `:as`
+option is automatically computed too. E.g. if you have a user schema:
 
     defmodule MyApp.Users.User do
       use Ecto.Schema
@@ -583,7 +710,8 @@ Always give the form an explicit, unique DOM ID, like `id="todo-form"`.
 
 #### Avoiding form errors
 
-**Always** use a form assigned via `to_form/2` in the LiveView, and the `<.input>` component in the template. In the template **always access forms this**:
+**Always** use a form assigned via `to_form/2` in the LiveView, and the `<.input>` component in the
+template. In the template **always access forms this**:
 
     <%!-- ALWAYS do this (valid) --%>
     <.form for={@form} id="my-form">
@@ -598,13 +726,17 @@ And **never** do this:
     </.form>
 
 - You are FORBIDDEN from accessing the changeset in the template as it will cause errors
-- **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form} ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a changeset
+- **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form}
+  ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should
+  **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a
+  changeset
 <!-- phoenix:liveview-end -->
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 
-This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and
+commands.
 
 ### Quick Reference
 
