@@ -1,6 +1,104 @@
-This is a web application written using the Phoenix web framework.
+# Agent orchestration
+
+## User pacing
+
+When the user asks to address issues "one by one" (or equivalent wording), treat that as an instruction to:
+1. investigate or identify only the next issue,
+2. explain the proposed next change,
+3. and wait for user approval before making that change.
+
+## Bead pacing
+
+Unless the user explicitly instructs otherwise, stop after completing a bead.
+
+After finishing a bead:
+1. report what changed,
+2. report what verification was run and the result,
+3. encourage the user to commit the changes,
+4. and wait for explicit user approval before starting the next bead.
+
+Do not automatically continue to the next bead just because it is ready, related, or part of the same handoff, epic,
+or workstream.
+
+## Red-test and scaffolding beads
+
+When verifying a bead whose purpose is to add red tests, contract-locking tests, helpers, or other scaffolding before
+later implementation beads:
+- read enough bead/epic/plan context to understand which production work is intentionally deferred to later beads,
+- judge success primarily by whether the intended tests/helpers were added and whether the remaining failures are
+  explained by that deferred implementation,
+- treat only accidental regressions, broken test scaffolding, or failures that contradict the bead's stated scope as
+  blockers,
+- and do not broaden the work into implementation or extra test cleanup without explicit user approval.
+
+## Subagents
+
+For tasks involving more files throughout the codebase, use subagents intelligently, e.g. one agent per module.
+When using subagents, don't run verification commands (compile, lint) inside them, run them in the main agent after the
+subagents finish.
+
+## Skills
+
+When looking for skills, look for the .agents dir in the project root and in the current user's home directory.
+
+## Context-window risk and handoffs
+
+When the conversation becomes large or context-heavy, proactively warn the user when you suspect the remaining context
+window is entering a risky zone. Treat this as a heuristic judgment, not an exact measurement.
+
+Prefer warning at a clean checkpoint rather than in the middle of a small edit/validation loop. When warning, briefly:
+
+- say that context risk appears to be increasing,
+- suggest a good handoff point or fresh-session boundary,
+- and offer a compact resume prompt or summary if helpful.
+
+If there are important learnings, decisions, caveats, or next-step recommendations that are not yet persisted in code,
+docs, or beads, suggest creating a short handoff document under `docs/handoffs/` when that would make the next
+session safer or more efficient.
+
+# Task tracking
+
+## Beads are the default task source
+
+This project uses **beads** as the persistent issue tracker. Always use `bd` commands to interact with issues —
+never edit tasks manually.
+At the start of a conversation, run `bd ready` to see what work is available and ask the user what to focus on.
+Beads should be the **first place you look** when the user asks what to work on, asks for a status check, or uses similar casual phrasing.
+Interpret casual status-check questions such as "what's up?", "anything ready?", or similar variations as a request to check `bd ready` and summarize the ready beads.
+
+# Version Control
+
+Prefer **Jujutsu** (`jj`) over `git` when the `jj` CLI is available. Check with `command -v jj` if unsure. Use the
+jujutsu skill for command reference.
+
+# Documentation Organization
+
+1. **General reference documentation** — Long-lived documents containing general information unrelated to specific tasks
+   or features (for example architecture overviews, API references, or coding standards) should be placed directly under
+   `docs/`.
+   - Example: `docs/architecture-overview.md`
+   - Example: `docs/api-reference.md`
+
+2. **Task-specific planning documents** — Non-PRD planning documents related to specific tasks, such as design
+   documents, technical analysis, implementation plans, or viability studies, should be placed under `docs/plans/`. Do
+   **not** prefix non-PRD plan filenames with dates. Use descriptive subdirectories when grouping related planning
+   documents if there is more than one.
+   - Example: `docs/plans/architecture-and-stack-design.md`
+   - Example: `docs/plans/entity-pagination/design.md`
+   - Example: `docs/plans/entity-pagination/implementation.md`
+
+3. **Product Requirements Documents (PRDs)** — PRDs should be placed under `docs/prd/` and should be prefixed with the
+   date of their creation in the `YYYY-MM-DD-` format.
+   - Example: `docs/prd/2026-03-11-entity-pagination.md`
+   - Example: `docs/prd/2026-03-11-admin-search-improvements.md`
+
+4. **Handoff documents** — Session handoffs, resumable context summaries, and next-step notes should be placed under
+   `docs/handoffs/` and should be prefixed with the date of their creation in the `YYYY-MM-DD-` format.
+   - Example: `docs/handoffs/2026-04-03-architecture-and-stack-handoff.md`
 
 ## Project guidelines
+
+This is a web application written using the Phoenix web framework.
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
 - Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
@@ -42,7 +140,6 @@ custom classes must fully style the input
 - Implement **subtle micro-interactions** (e.g., button hover effects, and smooth transitions)
 - Ensure **clean typography, spacing, and layout balance** for a refined, premium look
 - Focus on **delightful details** like hover effects, loading states, and smooth page transitions
-
 
 <!-- phoenix-gen-auth-start -->
 ## Authentication
@@ -102,10 +199,7 @@ LiveViews that can work with or without authentication, **always use the __exist
     end
 
 Controllers automatically have the `current_scope` available if they use the `:browser` pipeline.
-
 <!-- phoenix-gen-auth-end -->
-
-<!-- usage-rules-start -->
 
 <!-- phoenix:elixir-start -->
 ## Elixir guidelines
@@ -506,7 +600,6 @@ And **never** do this:
 - You are FORBIDDEN from accessing the changeset in the template as it will cause errors
 - **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form} ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a changeset
 <!-- phoenix:liveview-end -->
-<!-- usage-rules-end -->
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
@@ -524,7 +617,6 @@ bd close <id>         # Complete work
 
 ### Rules
 
-- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
 - Run `bd prime` for detailed command reference and session close protocol
 - Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
 <!-- END BEADS INTEGRATION -->

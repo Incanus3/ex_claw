@@ -2,11 +2,13 @@
 
 Date: 2026-04-03
 Updated: 2026-04-05
-Related design doc: `docs/specs/2026-04-03-v0-architecture-and-stack-design.md`
+Related design doc: `docs/plans/2026-04-03-v0-architecture-and-stack-design.md`
 
 ## Purpose
 
-This is the single current handoff doc for the project's architecture and stack direction. It summarizes the accepted design and the current repo state, and points future sessions to the fuller design doc in `docs/specs`.
+This is the single current handoff doc for the project's architecture and stack direction. It
+summarizes the accepted design and the current repo state, and points future sessions to the fuller
+design doc in `docs/plans`.
 
 ## Current Project State
 
