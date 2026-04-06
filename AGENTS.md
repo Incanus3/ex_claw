@@ -71,6 +71,13 @@ variations as a request to check `bd ready` and summarize the ready beads.
 
 - In this repo, use **`bd` only** for issue tracking workflows. Do **not** use `br`; it is an
   alternative toolchain and is not fully compatible with this repository's current beads setup.
+- The installed `bd` in this repo does **not** support `bd sync`. When asked to sync beads for the
+  viewer/JSONL export, use:
+  - `bd export -o .beads/issues.jsonl`
+- After every bead write operation, refresh the committed JSONL export with:
+  - `bd export -o .beads/issues.jsonl`
+  - This includes creating beads, updating them, closing them, reopening them, or otherwise changing
+    bead state/content.
 - If the `bv` viewer needs refreshed issue data, export the current `bd` issues to the JSONL file it
   expects with:
   - `bd export -o .beads/issues.jsonl`
