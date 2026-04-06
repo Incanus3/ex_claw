@@ -14,6 +14,8 @@ defmodule ExClaw.Application do
        repos: Application.fetch_env!(:ex_claw, :ecto_repos), skip: skip_migrations?()},
       {DNSCluster, query: Application.get_env(:ex_claw, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: ExClaw.PubSub},
+      {Task.Supervisor, name: ExClaw.Assistant.TaskSupervisor},
+      ExClaw.Assistant.ModelCatalog,
       # Start a worker by calling: ExClaw.Worker.start_link(arg)
       # {ExClaw.Worker, arg},
       # Start to serve requests, typically the last entry

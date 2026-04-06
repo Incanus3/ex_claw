@@ -39,3 +39,9 @@ config :phoenix_live_view,
 # Sort query params output of verified routes for robust url comparisons
 config :phoenix,
   sort_verified_routes_query_params: true
+
+config :ex_claw, ExClaw.Assistant,
+  default_backend: :auggie,
+  backends: %{auggie: ExClaw.TestSupport.FakeAssistantBackend},
+  backend_options: %{auggie: %{default_model: "fake-model-default", executable: "fake-auggie"}},
+  workspace_root: "/tmp/ex_claw_test"

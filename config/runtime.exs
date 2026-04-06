@@ -23,6 +23,17 @@ end
 config :ex_claw, ExClawWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+if config_env() != :test do
+  config :ex_claw, ExClaw.Assistant,
+    backend_options: %{
+      auggie: %{
+        default_model: System.get_env("AUGGIE_DEFAULT_MODEL", "gpt5.4"),
+        executable: System.get_env("AUGGIE_EXECUTABLE", "auggie")
+      }
+    },
+    workspace_root: System.get_env("ASSISTANT_WORKSPACE_ROOT", File.cwd!())
+end
+
 if config_env() == :prod do
   database_path =
     System.get_env("DATABASE_PATH") ||

@@ -24,6 +24,12 @@ config :ex_claw,
   ecto_repos: [ExClaw.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+config :ex_claw, ExClaw.Assistant,
+  default_backend: :auggie,
+  backends: %{auggie: ExClaw.Assistant.Backends.Auggie},
+  backend_options: %{auggie: %{default_model: "gpt5.4", executable: "auggie"}},
+  workspace_root: Path.expand("..", __DIR__)
+
 # Configure the endpoint
 config :ex_claw, ExClawWeb.Endpoint,
   url: [host: "localhost"],
