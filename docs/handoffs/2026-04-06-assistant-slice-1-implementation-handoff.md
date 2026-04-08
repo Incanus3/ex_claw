@@ -1,6 +1,7 @@
 # Assistant Slice 1 Implementation Handoff
 
 Date: 2026-04-06
+Last updated: 2026-04-09
 Related PRD: `docs/prd/2026-04-05-assistant-slice-1.md`
 Related design doc: `docs/plans/assistant-slice-1-design.md`
 Related implementation plan: `docs/plans/assistant-slice-1-implementation.md`
@@ -33,16 +34,17 @@ Execution beads:
 
 ## Current implementation status
 
-As of 2026-04-06, the first two execution beads are complete and closed:
+As of 2026-04-09:
 
-- `exc-zur.1.1` — complete
-- `exc-zur.1.2` — complete
+- `exc-zur.1.1` — complete and closed
+- `exc-zur.1.2` — complete and closed
+- `exc-zur.1.3` — complete and closed
 
-The next ready bead is:
+The next ready execution bead is:
 
-- `exc-zur.1.3` — Assistant context lifecycle APIs
+- `exc-zur.2.1` — Authenticated routes, redirects, LiveView shell
 
-### Completed foundation work
+### Completed foundation and context work
 
 Backend/config foundation now exists:
 
@@ -66,6 +68,7 @@ Persistence foundation now exists:
 - `lib/ex_claw/assistant/message.ex`
 - `lib/ex_claw/assistant/run.ex`
 - `lib/ex_claw/assistant/run_event.ex`
+- `lib/ex_claw/assistant.ex`
 - `test/support/fixtures/assistant_fixtures.ex`
 - `test/ex_claw/assistant_test.exs`
 
@@ -81,10 +84,27 @@ Important details from `exc-zur.1.2`:
 - Static `struct(Module, ...)` calls introduced during red-test setup were cleaned up back to
   direct `%Module{}` literals in tests and fixtures.
 
+Important details from `exc-zur.1.3`:
+
+- Public `ExClaw.Assistant` context APIs now exist for scope-aware session listing/loading,
+  default-session creation, rename/archive/model updates, user-message creation, run lifecycle, and
+  run-event recording.
+- New sessions inherit `backend` from assistant config and `current_model` from the configured
+  default model for that backend.
+- `assistant_sessions.last_message_at` is updated only for transcript message inserts, not for
+  generic run-event persistence.
+- Retries remain modeled as new run rows reusing the same original `user_message_id`.
+- `record_run_events!/2` was hardened against concurrent per-run sequence allocation races by
+  retrying on sequence uniqueness conflicts.
+- `ExClaw.Assistant.RunEvent` now uses the actual SQLite/Ecto unique-constraint name for
+  `(run_id, sequence)` conflicts so contention is normalized into a changeset-based retry path.
+
 ### Focused verification currently in place
 
 - `mix test test/ex_claw/assistant/backends/auggie_test.exs` → passes
-- `mix test test/ex_claw/assistant_test.exs` → passes
+- `mix test test/ex_claw/assistant_test.exs` → passes (including concurrent run-event sequence
+  allocation coverage)
+- `mix format --check-formatted lib/ex_claw/assistant.ex lib/ex_claw/assistant/run_event.ex test/ex_claw/assistant_test.exs` → passes
 
 ### Beads export status
 
@@ -95,7 +115,7 @@ Important details from `exc-zur.1.2`:
 
 1. Run `bd ready`.
 2. Start with the first ready execution bead in dependency order.
-   - At the time of this handoff update, this should be `exc-zur.1.3`.
+   - At the time of this handoff update, this should be `exc-zur.2.1`.
 3. Read all of:
    - this handoff
    - `docs/prd/2026-04-05-assistant-slice-1.md`
@@ -123,6 +143,6 @@ Important details from `exc-zur.1.2`:
 
 ## Next bead recommendation
 
-Continue with `exc-zur.1.3`.
-That bead should add the public `ExClaw.Assistant` context APIs on top of the now-complete backend
-and persistence foundations without reworking the already-closed beads.
+Continue with `exc-zur.2.1`.
+That bead should add the authenticated assistant routes, root/session landing behavior, and minimal
+LiveView shell on top of the now-complete backend, persistence, and public context foundations.

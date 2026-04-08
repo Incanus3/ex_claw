@@ -21,6 +21,6 @@ defmodule ExClaw.Assistant.RunEvent do
     |> validate_required([:sequence, :kind, :occurred_at])
     |> validate_number(:sequence, greater_than: 0)
     |> foreign_key_constraint(:run_id)
-    |> unique_constraint(:sequence, name: :assistant_run_events_run_id_sequence_idx)
+    |> unique_constraint(:sequence, name: :assistant_run_events_run_id_sequence_index)
   end
 end
