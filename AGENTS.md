@@ -89,6 +89,10 @@ variations as a request to check `bd ready` and summarize the ready beads.
 Prefer **Jujutsu** (`jj`) over `git` when the `jj` CLI is available. Check with `command -v jj` if
 unsure. Use the jujutsu skill for command reference.
 
+When the user explicitly asks you to create a commit with Jujutsu, prefer `jj commit` directly for
+the finalized change. Do **not** use `jj desc` immediately followed by `jj new` just to simulate a
+commit unless there is a specific stack-management reason to do so.
+
 Comitting and similar invasive VCS work is handled by the user. Do not commit, push, rebase, or
 otherwise modify VCS state unless the user explicitly asks.
 

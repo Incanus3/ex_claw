@@ -31,11 +31,19 @@ defmodule ExClawWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :main_class, :any,
+    default: nil,
+    doc: "optional classes for the main content wrapper"
+
+  attr :content_class, :any,
+    default: nil,
+    doc: "optional classes for the inner content container"
+
   slot :inner_block, required: true
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
+    <header class="navbar shrink-0 px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
         <a href="/" class="flex-1 flex w-fit items-center gap-2">
           <img src={~p"/images/logo.svg"} width="36" />
@@ -62,8 +70,8 @@ defmodule ExClawWeb.Layouts do
       </div>
     </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
+    <main class={@main_class || "px-4 py-20 sm:px-6 lg:px-8"}>
+      <div class={@content_class || "mx-auto max-w-2xl space-y-4"}>
         {render_slot(@inner_block)}
       </div>
     </main>
