@@ -44,7 +44,8 @@ This slice does not include:
 
 ## Routing and authentication
 
-The assistant UI must be placed inside the existing authenticated Phoenix scope:
+The assistant namespace and session UI must be placed inside the existing authenticated Phoenix
+scope:
 
 - pipeline: `[:browser, :require_authenticated_user]`
 - live session: `:require_authenticated_user`
@@ -59,21 +60,28 @@ The route shape for slice 1 is:
 
 - `/` redirects authenticated users to `/assistant`
 - `/assistant`
-- `/assistant/:session_id`
+- `/assistant/sessions`
+- `/assistant/sessions/:session_id`
 
 ### Landing behavior
 
 When a user visits `/assistant`:
 
+- redirect the user to `/assistant/sessions`
+- keep this route available for future assistant-related pages that are not tied to a specific
+  session
+
+When a user visits `/assistant/sessions`:
+
 - load that user's most recent non-archived session if one exists
 - otherwise create a new session using the default backend from application configuration and the
   configured default model for that backend
-- navigate to `/assistant/:session_id`
+- navigate to `/assistant/sessions/:session_id`
 
-When a user visits `/assistant/:session_id`:
+When a user visits `/assistant/sessions/:session_id`:
 
 - load that specific session if it belongs to the current user, even when it is archived
-- if the requested session is missing or inaccessible, redirect to `/assistant`
+- if the requested session is missing or inaccessible, redirect to `/assistant/sessions`
 - show a flash message explaining that the requested session was unavailable and the user was
   redirected to an active assistant session instead
 - when the requested session is archived, keep it viewable but disable message submission and show
@@ -84,7 +92,7 @@ should always take `current_scope` first so session access remains tied to the a
 
 ## UI and interaction model
 
-The slice should use a single assistant LiveView with two main areas:
+The slice should use a single session-centric LiveView (`SessionsLive`) with two main areas:
 
 1. a lightweight session list
 2. the active chat session
@@ -323,8 +331,8 @@ This preserves portability while still allowing efficient continuation and bette
 
 ## Application architecture
 
-The assistant LiveView should not directly invoke backend integration details. Instead it should
-call shared application-layer modules that handle:
+The `SessionsLive` LiveView should not directly invoke backend integration details. Instead it
+should call shared application-layer modules that handle:
 
 - session loading and creation
 - session update actions such as rename and archive
@@ -674,8 +682,10 @@ Assistant slice 1 is done when all of the following are true:
 
 - authenticated assistant routes exist under the existing authenticated LiveView scope
 - the authenticated root route redirects to `/assistant`
-- `/assistant` lands the user in the most recent session or creates one and navigates to it
-- `/assistant/:session_id` renders a persisted session-specific assistant view
+- `/assistant` redirects to `/assistant/sessions`
+- `/assistant/sessions` lands the user in the most recent session or creates one and navigates to
+  it
+- `/assistant/sessions/:session_id` renders a persisted session-specific assistant view
 - sessions are scoped to the authenticated user through `current_scope`
 - the UI supports create, switch, rename, and archive session actions
 - new sessions persist default backend and current model values

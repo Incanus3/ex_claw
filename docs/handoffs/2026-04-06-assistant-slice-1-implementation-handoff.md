@@ -1,7 +1,7 @@
 # Assistant Slice 1 Implementation Handoff
 
 Date: 2026-04-06
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 Related PRD: `docs/prd/2026-04-05-assistant-slice-1.md`
 Related design doc: `docs/plans/assistant-slice-1-design.md`
 Related implementation plan: `docs/plans/assistant-slice-1-implementation.md`
@@ -43,6 +43,12 @@ As of 2026-04-09:
 The next ready execution bead is:
 
 - `exc-zur.2.1` — Authenticated routes, redirects, LiveView shell
+
+Route note for `exc-zur.2.1`:
+
+- `/assistant` is now the authenticated assistant namespace root and should redirect to
+  `/assistant/sessions`
+- `SessionsLive` should handle `/assistant/sessions` and `/assistant/sessions/:session_id`
 
 ### Completed foundation and context work
 
@@ -144,5 +150,6 @@ Important details from `exc-zur.1.3`:
 ## Next bead recommendation
 
 Continue with `exc-zur.2.1`.
-That bead should add the authenticated assistant routes, root/session landing behavior, and minimal
-LiveView shell on top of the now-complete backend, persistence, and public context foundations.
+That bead should add the authenticated assistant namespace redirect, the `/assistant/sessions`
+landing behavior, and the minimal `SessionsLive` shell on top of the now-complete backend,
+persistence, and public context foundations.

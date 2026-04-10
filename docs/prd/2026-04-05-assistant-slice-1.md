@@ -69,16 +69,20 @@ session so that I can start or resume a conversation immediately.
   :require_authenticated_user]` pipeline and the existing `live_session :require_authenticated_user`
   block.
 - [ ] The authenticated root route redirects to `/assistant`.
-- [ ] Add `/assistant` as a landing route and `/assistant/:session_id` as the session-specific route.
-- [ ] Visiting `/assistant` loads the current user's most recent non-archived session if one exists.
-- [ ] Visiting `/assistant` creates a new session with the default backend from application
+- [ ] Add `/assistant` as the assistant namespace root, `/assistant/sessions` as the session landing
+  route, and `/assistant/sessions/:session_id` as the session-specific route.
+- [ ] Visiting `/assistant` redirects the authenticated user to `/assistant/sessions`.
+- [ ] Visiting `/assistant/sessions` loads the current user's most recent non-archived session if one
+  exists.
+- [ ] Visiting `/assistant/sessions` creates a new session with the default backend from application
   configuration and the configured default model for that backend when no active session exists.
-- [ ] After landing behavior runs, the user is navigated to `/assistant/:session_id`.
+- [ ] After landing behavior runs, the user is navigated to
+  `/assistant/sessions/:session_id`.
 - [ ] Session access is scoped to the authenticated user via `current_scope`.
-- [ ] Visiting `/assistant/:session_id` loads that specific session when it belongs to the current
-  user, including when it is archived.
-- [ ] If `/assistant/:session_id` refers to a missing or inaccessible session, the user is
-  redirected to `/assistant` and shown a flash message explaining the redirect.
+- [ ] Visiting `/assistant/sessions/:session_id` loads that specific session when it belongs to the
+  current user, including when it is archived.
+- [ ] If `/assistant/sessions/:session_id` refers to a missing or inaccessible session, the user is
+  redirected to `/assistant/sessions` and shown a flash message explaining the redirect.
 - [ ] When the loaded session is archived, the session remains viewable but the message composer is
   disabled and shows the message `This session is archived.`.
 
@@ -211,14 +215,14 @@ differently so that conversation state is honest and failures are debuggable.
 - FR-2: Assistant LiveView routes must be placed in the existing authenticated Phoenix scope and
   live session.
 - FR-3: The authenticated root route must redirect to `/assistant`.
-- FR-4: Visiting `/assistant` must open the current user's most recent non-archived session or
-  create a new one if none exists.
-- FR-5: Visiting `/assistant/:session_id` must load that session when it belongs to the current
-  user, including when the session is archived.
-- FR-6: Missing or inaccessible `/assistant/:session_id` requests must redirect to `/assistant`
-  with a flash message.
-- FR-7: Archived sessions must remain viewable, but their message composer must be disabled and
-  show the message `This session is archived.`.
+- FR-4: Visiting `/assistant` must redirect to `/assistant/sessions`.
+- FR-5: Visiting `/assistant/sessions` must open the current user's most recent non-archived
+  session or create a new one if none exists.
+- FR-6: Visiting `/assistant/sessions/:session_id` must load that session when it belongs to the
+  current user, including when the session is archived.
+- FR-7: Missing or inaccessible `/assistant/sessions/:session_id` requests must redirect to
+  `/assistant/sessions` with a flash message, and archived sessions must remain viewable but their
+  message composer must be disabled and show the message `This session is archived.`.
 - FR-8: The system must persist assistant sessions as user-owned records with backend and current
   model stored on the session.
 - FR-9: The system must support creating, switching, renaming, and archiving sessions.
