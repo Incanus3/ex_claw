@@ -60,6 +60,15 @@ defmodule ExClaw.Assistant do
     |> Repo.update()
   end
 
+  def list_messages(current_scope, %Session{id: id}) do
+    current_scope
+    |> get_session!(id)
+    |> Repo.preload(
+      messages: from(message in Message, order_by: [asc: message.inserted_at, asc: message.id])
+    )
+    |> Map.get(:messages)
+  end
+
   def create_user_message(current_scope, %Session{id: id}, attrs) do
     session = get_session!(current_scope, id)
     attrs = Map.put(Map.new(attrs), :role, :user)

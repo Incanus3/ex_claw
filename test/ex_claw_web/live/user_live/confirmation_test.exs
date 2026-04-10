@@ -64,7 +64,7 @@ defmodule ExClawWeb.UserLive.ConfirmationTest do
       assert Accounts.get_user!(user.id).confirmed_at
       # we are logged in now
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/assistant"
 
       # log out, new conn
       conn = build_conn()
@@ -96,6 +96,7 @@ defmodule ExClawWeb.UserLive.ConfirmationTest do
                "Welcome back!"
 
       assert Accounts.get_user!(user.id).confirmed_at == user.confirmed_at
+      assert redirected_to(conn) == ~p"/assistant"
 
       # log out, new conn
       conn = build_conn()
