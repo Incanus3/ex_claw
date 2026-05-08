@@ -5,7 +5,9 @@ Updated: 2026-04-05
 
 ## Context
 
-These notes capture the current direction for building a minimal but usable personal AI assistant inspired by the personal-assistant side of OpenClaw, explicitly excluding anything related to the retro game project with the same name.
+These notes capture the current direction for building a minimal but usable personal AI assistant
+inspired by the personal-assistant side of OpenClaw, explicitly excluding anything related to the
+retro game project with the same name.
 
 ## Current Project State
 
@@ -19,7 +21,8 @@ Current implementation state:
 
 ## What OpenClaw Means Here
 
-OpenClaw, in the relevant sense, is a self-hosted personal AI assistant platform. The relevant inspiration is:
+OpenClaw, in the relevant sense, is a self-hosted personal AI assistant platform. The relevant
+inspiration is:
 - personal-assistant framing rather than just a chat UI
 - persistent assistant behavior
 - tool use and automation
@@ -35,7 +38,8 @@ For an experienced software developer who is new to modern LLM tooling:
 - something trustworthy as a daily personal assistant: roughly 6-12 weeks
 - OpenClaw-like breadth/polish: many months of ongoing work
 
-Key point: model integration is likely the easy part. The harder parts are state, memory, autonomy, tools, safety, reliability, and long-running behavior.
+Key point: model integration is likely the easy part. The harder parts are state, memory, autonomy,
+tools, safety, reliability, and long-running behavior.
 
 ## Current v0 Scope
 
@@ -133,7 +137,8 @@ This looks like a product/system-design problem more than an LLM problem. It lik
 - audit trail
 - user-visible progress
 
-This should likely be modeled as a normal application subsystem, with the LLM helping operate it rather than replacing it.
+This should likely be modeled as a normal application subsystem, with the LLM helping operate it
+rather than replacing it.
 
 ## Recommended Development Order
 
@@ -150,7 +155,9 @@ This should likely be modeled as a normal application subsystem, with the LLM he
 
 ## Working Assumption About Backends
 
-A likely initial design is to treat opencode and Augment as interchangeable backend adapters behind a common internal interface. Even if they provide tool-calling support, the assistant still needs its own application-level state, memory policy, task model, and logging.
+A likely initial design is to treat opencode and Augment as interchangeable backend adapters behind
+a common internal interface. Even if they provide tool-calling support, the assistant still needs
+its own application-level state, memory policy, task model, and logging.
 
 ## Important Practical Recommendation
 

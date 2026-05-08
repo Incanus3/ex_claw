@@ -12,7 +12,8 @@ design doc in `docs/plans`.
 
 ## Current Project State
 
-The repository is currently a freshly generated Phoenix application with LiveView auth scaffolding and SQLite/Ecto setup.
+The repository is currently a freshly generated Phoenix application with LiveView auth scaffolding
+and SQLite/Ecto setup.
 
 What exists today:
 - Phoenix app scaffold
@@ -37,7 +38,8 @@ What does not exist yet:
 - The HTTP API is planned from the beginning and should call that same shared logic.
 - The project is not API-first.
 - The interaction model is hybrid in architecture but reactive and mostly synchronous in behavior.
-- In this context, reactive/inline behavior means work is handled within the current user interaction rather than delegated to an independent persisted background task.
+- In this context, reactive/inline behavior means work is handled within the current user
+  interaction rather than delegated to an independent persisted background task.
 - The design should leave a clear seam for future background tasks and longer-running workflows.
 - The product is single-user for now, though multiple sessions are expected.
 

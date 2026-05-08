@@ -6,21 +6,31 @@ Status: Accepted current design
 
 ## Goal
 
-Define the overall shape of the project before subsystem design. The intent is to optimize for fast iteration, outside-in development, and maintainability without overengineering v0.
+Define the overall shape of the project before subsystem design. The intent is to optimize for fast
+iteration, outside-in development, and maintainability without overengineering v0.
 
 ## Current Project State
 
-The repository is currently a freshly generated Phoenix application with LiveView auth scaffolding and SQLite/Ecto wiring. There is no assistant-specific product functionality implemented yet.
+The repository is currently a freshly generated Phoenix application with LiveView auth scaffolding
+and SQLite/Ecto wiring. There is no assistant-specific product functionality implemented yet.
 
 This document describes the chosen architecture for building on top of that scaffold.
 
 ## Design Summary
 
-The project should proceed as a single Phoenix application using LiveView as the primary v0 user interface. The architecture should be an API-conscious layered monolith: the LiveView UI can call application logic directly, and the planned HTTP API should call the same lower-level modules rather than duplicating behavior.
+The project should proceed as a single Phoenix application using LiveView as the primary v0 user
+interface. The architecture should be an API-conscious layered monolith: the LiveView UI can call
+application logic directly, and the planned HTTP API should call the same lower-level modules rather
+than duplicating behavior.
 
-Persistence should exist from the start, but should remain lightweight. For v0, that means Ecto with SQLite rather than a mandatory external Postgres dependency.
+Persistence should exist from the start, but should remain lightweight. For v0, that means Ecto with
+SQLite rather than a mandatory external Postgres dependency.
 
-The initial execution model should be mostly synchronous and reactive. Normal assistant interactions should happen inline within the current user flow, meaning they are handled as part of the current user interaction rather than delegated to an independent persisted background task. The architecture should preserve a clear seam for later promotion of selected actions into persisted background tasks.
+The initial execution model should be mostly synchronous and reactive. Normal assistant interactions
+should happen inline within the current user flow, meaning they are handled as part of the current
+user interaction rather than delegated to an independent persisted background task. The architecture
+should preserve a clear seam for later promotion of selected actions into persisted background
+tasks.
 
 ## Key Product Assumptions
 
@@ -45,10 +55,12 @@ The initial execution model should be mostly synchronous and reactive. Normal as
 Rejected for v0 because it adds ceremony and slows iteration without enough immediate benefit.
 
 ### Mandatory external Postgres from day one
-Rejected for v0 because it adds setup and operational dependency cost that is not justified for a single-user early-stage product.
+Rejected for v0 because it adds setup and operational dependency cost that is not justified for a
+single-user early-stage product.
 
 ### Task-oriented execution for everything from the start
-Rejected for v0 because it adds complexity before the user-facing workflow and assistant behavior are understood.
+Rejected for v0 because it adds complexity before the user-facing workflow and assistant behavior
+are understood.
 
 ## Architectural Style
 
@@ -62,7 +74,8 @@ That means:
 - planned API endpoints should call the same application layer as the UI
 - persistence and backend orchestration live below the delivery layer
 
-This preserves the development feel of a LiveView-first product while keeping the codebase ready for a later HTTP API and additional interaction surfaces.
+This preserves the development feel of a LiveView-first product while keeping the codebase ready for
+a later HTTP API and additional interaction surfaces.
 
 ## Delivery Clarification
 
@@ -89,13 +102,16 @@ The initial interaction model is hybrid in architecture but reactive in behavior
 - UI updates should be visible quickly and support iterative development
 - the code should keep a seam where selected actions can later become persisted background tasks
 
-This reflects the chosen architecture: the system is layered from the beginning to support both the LiveView UI and the planned HTTP API, while v0 behavior remains primarily inline and reactive.
+This reflects the chosen architecture: the system is layered from the beginning to support both the
+LiveView UI and the planned HTTP API, while v0 behavior remains primarily inline and reactive.
 
-Here, inline means the user triggers an interaction and the system handles that work within the same active flow, instead of turning it into a separate background task that continues independently.
+Here, inline means the user triggers an interaction and the system handles that work within the same
+active flow, instead of turning it into a separate background task that continues independently.
 
 ## Persistence Direction
 
-Persistence should be present from the beginning because the project expects sessions and logs to matter early.
+Persistence should be present from the beginning because the project expects sessions and logs to
+matter early.
 
 For v0, prefer SQLite because it:
 
@@ -103,7 +119,8 @@ For v0, prefer SQLite because it:
 - supports fast local iteration
 - is sufficient for a single-user application with multiple sessions
 
-The code should still use normal Ecto boundaries so that moving to Postgres later remains possible if the product grows beyond SQLite's comfort zone.
+The code should still use normal Ecto boundaries so that moving to Postgres later remains possible
+if the product grows beyond SQLite's comfort zone.
 
 ## High-Level Layering
 
